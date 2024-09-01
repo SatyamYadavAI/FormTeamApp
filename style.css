@@ -1,0 +1,27 @@
+/* styles.css */
+.user-card {
+    border: 1px solid #ccc;
+    padding: 10px;
+    margin: 10px;
+    text-align: center;
+}
+
+.user-card img {
+    max-width: 100%;
+    height: auto;
+}
+
+.green {
+    font-size: medium;
+    color: green;
+}
+
+.available-text {
+    background-color: aquamarine;
+    color: green;
+}
+
+.not-available-text {
+    color: red;
+    /* You can adjust the color based on your preference */
+}
