@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="formTeamApp">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Team App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="app.js"></script>
+    <script src="FormTeamCtrl.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+        integrity="sha384-4LISF5TTJX/fLmGSxO53rV4miRxdg84mZsxmO8Rx5jGtp/LbrixFETvWa5a6sESd" crossorigin="anonymous">
+    <link type="stylesheet" rel="stylesheet" href="styles.css">
+</head>
+
+<body ng-controller="FormTeamController as ftc" class="w-auto h-100">
+    <div class="sticky-top">
+        <nav class="navbar navbar-expand-lg bg-dark border-body" data-bs-theme="dark">
+            <div class="container-fluid">
+                <a class="navbar-brand ms-2" href="index.html">Form Team</a>
+                <form class="d-flex col-7 col-md-4 col-lg-4 col-sm-6">
+                    <input class="form-control me-2 bg-white text-dark" type="search" ng-model="FindByName"
+                        placeholder="Search by Name...">
+                    <button class="btn btn-warning shadow me-2" type="button" title="Search"><i
+                            class="bi bi-search"></i></button>
+                    <button class="btn btn-warning shadow col-2" type="button" ng-click="ftc.showTeamDetails()"
+                        title="Show Team"><i class="bi bi-people-fill"></i>&nbsp;{{ftc.team.length}}</button>
+                </form>
+            </div>
+        </nav>
+    </div>
+    <div class="modal fade" id="teamDetails" tabindex="-1" aria-labelledby="teamDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="teamDetailsModalLabel">Team Members</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- <div>
+                        <p ng-repeat="user in ftc.team">
+                            <img ng-src="{{ user.avatar }}" alt="{{ user.first_name }} {{ user.last_name }}"
+                                class="rounded-circle bg-dark" width="50" height="50">
+                            <strong>{{ user.first_name }} {{ user.last_name }},</strong>
+                            {{ user.gender ==='Male' ? 'M' : 'F' }},
+                            {{ user.domain }} <button type="button" class="btn btn-dark float-end"
+                                ng-if="user.available" ng-click="ftc.addToTeam(user);">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                            <hr>
+                        </p>
+                    </div>
+                     -->
+                     <div>
+                        <div ng-repeat="user in ftc.team" class="d-flex align-items-center mb-2">
+                            <img ng-src="{{ user.avatar }}" alt="{{ user.first_name }} {{ user.last_name }}"
+                                class="rounded-circle bg-dark me-2" width="50" height="50">
+                            <div class="flex-grow-1">
+                                <strong>{{ user.first_name }} {{ user.last_name }},</strong>
+                                {{ user.gender === 'Male' ? 'M' : 'F' }},
+                                {{ user.domain }}
+                            </div>
+                            <button type="button" class="btn btn-outline-danger ms-2"
+                                ng-if="user.available" ng-click="ftc.removeFromTeam(user);">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                        <hr>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container p-3 mb-3">
+        <form class="">
+            <div class="row">
+                <div class="col-4 col-md-2 col-lg-3">
+                    <select class="form-control form-select" ng-model="ftc.selectedDomain"
+                        ng-options="domain for domain in ftc.getUniqueDomains()" ng-init="ftc.selectedDomain = null"
+                        ng-change="ftc.filterUsers()">
+                        <option value="">--Domain--</option>
+                    </select>
+                </div>
+                <div class="col-4 col-md-2 col-lg-3">
+                    <select class="form-control form-select" ng-model="ftc.selectedGender"
+                        ng-options="gender for gender in ['Male', 'Female']" ng-init="ftc.selectedGender = null"
+                        ng-change="ftc.filterUsers()">
+                        <option value="">--Gender--</option>
+                    </select>
+                </div>
+                <div class="col-4 col-md-2 col-lg-3">
+                    <select class="form-control form-select" ng-model="ftc.selectedAvailability"
+                        ng-options="availability as (availability ? 'Available' : 'Not Available') for availability in [true, false]"
+                        ng-init="ftc.selectedAvailability = null" ng-change="ftc.filterUsers()">
+                        <option value="">--Availability--</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-2 col-lg-3 mt-2 mt-md-0 mt-lg-0 md-xl-0"
+                    ng-if="ftc.selectedDomain || ftc.selectedGender || ftc.selectedAvailability !== null">
+                    <button type="button" class="btn btn-danger" title="clear filters"
+                        ng-click="ftc.resetFilters()">clear
+                        filters <i class="bi bi-x"></i></button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="container mb-2">
+        <div class="row">
+            <div class="col-md-3 col-sm-6"
+                ng-repeat="user in ftc.filteredUsers | limitTo: ftc.usersPerPage : (ftc.currentPage - 1) * ftc.usersPerPage |  filter: FindByName">
+                <div class="card shadow-lg mb-3 w-auto h-70">
+                    <div class="text-center mt-5">
+                        <img ng-src="{{ user.avatar }}" alt="{{ user.first_name }} {{ user.last_name }}"
+                            class="rounded-circle bg-dark" width="80" height="80">
+                    </div>
+                    <div class="card-body">
+                        <p class="text-center">
+                            <strong>{{ user.first_name }} {{ user.last_name }},</strong> {{ user.gender
+                            ==='Male' ? 'M' : 'F' }} <br>
+                            {{ user.domain }}
+                            <hr>
+                        </p>
+                        <p class="ms-2">
+                            <a href="mailto:{user.email}"> {{ user.email }}</a><br>
+                            <span class="card-text" ng-style="{'color': user.available ? 'green' : 'red'}">
+                                {{ user.available ? 'Available' : 'Not Available' }}</span>
+                        </p>
+                        <p class="float-end">
+                            <button type="button" class="btn btn-dark" ng-if="user.available"
+                                ng-click="ftc.addToTeam(user);">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                            <button type="button" class="btn btn-danger" ng-if="!user.available"
+                                ng-disabled="!user.available" ng-click="">
+                                <i class="bi bi-exclamation"></i>
+                            </button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="bg-body-tertiary">
+        <div class="container p-3 pb-0">
+            <section class="mb-4">
+                <a class="btn text-white btn-floating m-1 shadow-lg" style="background-color: #dd4b39;"
+                    href="mailto:satyamyadavaiml@gmail.com"><i class="bi bi-google"></i></a>
+                <a class="btn text-white btn-floating m-1 shadow-lg" style="background-color: #0082ca;"
+                    href="https://www.linkedin.com/in/satyam-yadav-382090280/" target="_blank"><i
+                        class="bi bi-linkedin"></i></a>
+                <a class="btn text-white btn-floating m-1 shadow-lg" style="background-color: #333333;"
+                    href="https://github.com/SatyamYadavAI" target="_blank"><i class="bi bi-github"></i></a>
+                <div class="float-end" ng-if="ftc.totalPages > 1">
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination">
+                            <button class="btn btn-dark" type="button" ng-click="ftc.prevPage()"><i
+                                    class="bi bi-arrow-left-circle-fill"></i></i></button>
+                            <button class="btn btn-outline-dark" type="button" ng-click="">{{ ftc.currentPage
+                                }}</button>
+                            <button class="btn btn-outline-dark" type="button"
+                                ng-disabled="ftc.currentPage===ftc.totalPages"
+                                ng-click="ftc.nextPage()">{{ftc.currentPage+1}}</button>
+                            <button class="btn btn-dark" type="button" ng-click="ftc.nextPage()"
+                                ng-disabled="ftc.currentPage===ftc.totalPages"><i
+                                    class="bi bi-arrow-right-circle-fill"></i></button>
+                        </ul>
+                    </nav>
+                </div>
+            </section>
+
+        </div>
+        <div class="text-center p-3 pb-2" style="background-color: rgba(0, 0, 0, 0.05);">
+            <b># Full Stack Developer</b>
+        </div>
+        <div class="text-center pb-2" style="background-color: rgba(0, 0, 0, 0.05);">
+            Assignment Completed By <b>Satyam Yadav</b>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>
